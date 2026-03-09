@@ -1,5 +1,6 @@
 package com.than.project.pop_cart_ecom.service.impl;
 
+import com.than.project.pop_cart_ecom.exception.ResourceNotFoundException;
 import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.repository.CategoryRepository;
 import com.than.project.pop_cart_ecom.service.CategoryService;
@@ -35,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
     public String deleteCategory(Long id) {
 
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RESOURCE NOT FOUND"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", id));
         categoryRepository.delete(category);
         return "Category id: " + id + " deleted successfully";
     }
@@ -44,7 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Long id, Category category) {
 
         Category savedCataegory = categoryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "RESOURCE NOT FOUND"));
+                .orElseThrow(() -> new ResourceNotFoundException("categorygi", "categoryId", id));
 
         category.setCategoryId(id);
         savedCataegory = categoryRepository.save(category);
