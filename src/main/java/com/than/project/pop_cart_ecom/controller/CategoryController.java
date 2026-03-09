@@ -4,12 +4,9 @@ import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -35,21 +32,14 @@ public class CategoryController {
 
     @DeleteMapping("/public/deleteCategory/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable("id") Long categoryId){
-        try{
+
             String status = categoryService.deleteCategory(categoryId);
             return new ResponseEntity<>(status, HttpStatus.OK);
-        }catch(ResponseStatusException e){
-            return new ResponseEntity<>(e.getReason(), e.getStatusCode());
-        }
     }
 
     @PutMapping("/public/updateCategory/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable long id,@RequestBody Category category){
-        try{
+    public ResponseEntity<String> updateCategory(@PathVariable long id,@Valid @RequestBody Category category){
             Category updatedCategory = categoryService.updateCategory(id, category);
             return new ResponseEntity<>("Successfully update" + category,HttpStatus.OK);
-        }catch(ResponseStatusException e){
-            return new ResponseEntity<>(e.getReason(), e.getStatusCode());
-        }
     }
 }
