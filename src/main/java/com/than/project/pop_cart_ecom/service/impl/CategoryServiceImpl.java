@@ -1,17 +1,13 @@
 package com.than.project.pop_cart_ecom.service.impl;
 
+import com.than.project.pop_cart_ecom.exception.APIException;
 import com.than.project.pop_cart_ecom.exception.ResourceNotFoundException;
 import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.repository.CategoryRepository;
 import com.than.project.pop_cart_ecom.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 
 @Service
@@ -24,11 +20,21 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        List<Category> categoryList = categoryRepository.findAll();
+
+        if(categoryList == null || categoryList.isEmpty()){
+            throw new APIException("No records found!!");
+        }
+        return categoryList;
     }
 
     @Override
     public void createCategory(Category category) {
+        Category savedCategory = categoryRepository.findByCategoryName(category.getCategoryName());
+
+        if(savedCategory !=null){
+            throw new APIException("Category with the name: " + category.getCategoryName() + " already Existing!!");
+        }
         categoryRepository.save(category);
     }
 
