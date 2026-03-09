@@ -4,7 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
@@ -18,8 +20,8 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long categoryId;
 
-
     @NotBlank
+    @Size(min=5, message="Category must contains 5 characters")
     private String categoryName;
 
 }
