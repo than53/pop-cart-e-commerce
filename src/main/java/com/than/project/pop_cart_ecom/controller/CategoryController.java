@@ -1,6 +1,8 @@
 package com.than.project.pop_cart_ecom.controller;
 
 import com.than.project.pop_cart_ecom.model.Category;
+import com.than.project.pop_cart_ecom.payload.CategoryDTO;
+import com.than.project.pop_cart_ecom.payload.CategoryResponse;
 import com.than.project.pop_cart_ecom.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,16 +20,16 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/public/categories")
-    public ResponseEntity<List<Category> >getAllCategories(){
-        List<Category> categories = categoryService.getAllCategories();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+    public ResponseEntity<CategoryResponse>getAllCategories(){
+        CategoryResponse categoriesResponse = categoryService.getAllCategories();
+        return new ResponseEntity<>(categoriesResponse, HttpStatus.OK);
     }
 
 
     @PostMapping("/public/createCategory")
-    public ResponseEntity<String> createCategory(@Valid @RequestBody Category category){
-        categoryService.createCategory(category);
-        return new ResponseEntity<>("Successfully added Category", HttpStatus.CREATED);
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO){
+        CategoryDTO savedCategoryDTO = categoryService.createCategory(categoryDTO);
+        return new ResponseEntity<>(savedCategoryDTO, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/public/deleteCategory/{id}")
