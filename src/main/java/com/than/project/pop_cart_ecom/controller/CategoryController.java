@@ -1,6 +1,5 @@
 package com.than.project.pop_cart_ecom.controller;
 
-import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.payload.CategoryDTO;
 import com.than.project.pop_cart_ecom.payload.CategoryResponse;
 import com.than.project.pop_cart_ecom.service.CategoryService;
@@ -9,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -33,15 +30,15 @@ public class CategoryController {
     }
 
     @DeleteMapping("/public/deleteCategory/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable("id") Long categoryId){
+    public ResponseEntity<CategoryDTO> deleteCategory(@PathVariable("id") Long categoryId){
 
-            String status = categoryService.deleteCategory(categoryId);
-            return new ResponseEntity<>(status, HttpStatus.OK);
+            CategoryDTO deleteCategory = categoryService.deleteCategory(categoryId);
+            return new ResponseEntity<>(deleteCategory, HttpStatus.OK);
     }
 
     @PutMapping("/public/updateCategory/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable long id,@Valid @RequestBody Category category){
-            Category updatedCategory = categoryService.updateCategory(id, category);
-            return new ResponseEntity<>("Successfully update" + category,HttpStatus.OK);
+    public ResponseEntity<CategoryDTO> updateCategory(@PathVariable long id,@Valid @RequestBody CategoryDTO categoryDTO){
+            CategoryDTO updatedCategory = categoryService.updateCategory(id, categoryDTO);
+            return new ResponseEntity<>(updatedCategory,HttpStatus.OK);
     }
 }
