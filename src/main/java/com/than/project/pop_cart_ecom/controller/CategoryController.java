@@ -1,5 +1,6 @@
 package com.than.project.pop_cart_ecom.controller;
 
+import com.than.project.pop_cart_ecom.config.AppConstant;
 import com.than.project.pop_cart_ecom.payload.CategoryDTO;
 import com.than.project.pop_cart_ecom.payload.CategoryResponse;
 import com.than.project.pop_cart_ecom.service.CategoryService;
@@ -18,10 +19,12 @@ public class CategoryController {
 
     @GetMapping("/public/categories")
     public ResponseEntity<CategoryResponse>getAllCategories(
-            @RequestParam(name="pageNumber") Integer pageNumber,
-            @RequestParam(name="pageSize") Integer pageSize
+            @RequestParam(name="pageNumber", defaultValue = AppConstant.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name="pageSize", defaultValue = AppConstant.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name="sortBy", defaultValue = AppConstant.SORT_CATEGORIES_BY, required = false) String sortBy,
+            @RequestParam(name="sortOrder", defaultValue = AppConstant.SORT_DIR, required = false) String sortOrder
     ){
-        CategoryResponse categoriesResponse = categoryService.getAllCategories(pageNumber, pageSize);
+        CategoryResponse categoriesResponse = categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<>(categoriesResponse, HttpStatus.OK);
     }
 
