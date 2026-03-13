@@ -1,15 +1,21 @@
 package com.than.project.pop_cart_ecom.service.impl;
 
+import com.than.project.pop_cart_ecom.exception.APIException;
 import com.than.project.pop_cart_ecom.exception.ResourceNotFoundException;
 import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.model.Product;
 import com.than.project.pop_cart_ecom.payload.ProductDTO;
+import com.than.project.pop_cart_ecom.payload.ProductResponse;
 import com.than.project.pop_cart_ecom.repository.CategoryRepository;
 import com.than.project.pop_cart_ecom.repository.ProductRepository;
 import com.than.project.pop_cart_ecom.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -37,5 +43,24 @@ public class ProductServiceImpl implements ProductService{
         Product savedProduct = productRepository.save(product);
 
         return modelMapper.map(product, ProductDTO.class);
+    }
+
+    @Override
+    public ProductResponse getAllProduct() {
+
+        ProductResponse productResponse = new ProductResponse();
+        List<Product> productList = productRepository.findAll();
+
+        if(productList.isEmpty()){
+            throw new APIException("No Product Records found!!");
+        }
+
+        List<ProductDTO> productDTOS = productList.stream()
+                        .map(product -> modelMapper.map(product, ProductDTO.class))
+                                .toList();
+
+        productResponse.setContent(productDTOS);
+        return productResponse;
+
     }
 }
