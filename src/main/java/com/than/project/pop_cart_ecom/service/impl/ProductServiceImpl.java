@@ -66,11 +66,19 @@ public class ProductServiceImpl implements ProductService{
         return getProductResponse(productList);
     }
 
+    @Override
+    public ProductResponse searchProductByKeyword(String keyword) {
+
+        List<Product> productList = productRepository.findByProductNameLikeIgnoreCase('%'+keyword+'%');
+
+        return  getProductResponse(productList);
+    }
+
     @NonNull
     private ProductResponse getProductResponse(List<Product> productList) {
-        if(productList.isEmpty()){
-            throw new APIException("No Product Records found!!");
-        }
+//        if(productList.isEmpty()){
+//            throw new APIException("No Product Records found!!");
+//        }
         List<ProductDTO> productDTOS = productList.stream()
                         .map( product -> modelMapper.map(product, ProductDTO.class))
                         .toList();
