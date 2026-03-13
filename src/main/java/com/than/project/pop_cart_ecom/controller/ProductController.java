@@ -24,9 +24,16 @@ public class ProductController {
 
     @GetMapping("/public/products")
     public ResponseEntity<ProductResponse> getAllProduct(){
-            ProductResponse productList = productService.getAllProduct();
+            ProductResponse productResponse = productService.getAllProduct();
 
-            return new ResponseEntity<>(productList, HttpStatus.OK);
+            return new ResponseEntity<>(productResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/categories/{categories}/products")
+    public ResponseEntity<ProductResponse> getProductsByCategory(@PathVariable Long categories){
+        ProductResponse productResponse = productService.searchByCategory(categories);
+
+        return new ResponseEntity<>(productResponse, HttpStatus.OK);
     }
 
 }

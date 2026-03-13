@@ -9,6 +9,7 @@ import com.than.project.pop_cart_ecom.payload.ProductResponse;
 import com.than.project.pop_cart_ecom.repository.CategoryRepository;
 import com.than.project.pop_cart_ecom.repository.ProductRepository;
 import com.than.project.pop_cart_ecom.service.ProductService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -48,19 +49,34 @@ public class ProductServiceImpl implements ProductService{
     @Override
     public ProductResponse getAllProduct() {
 
-        ProductResponse productResponse = new ProductResponse();
         List<Product> productList = productRepository.findAll();
 
+        return getProductResponse(productList);
+
+    }
+
+    @Override
+    public ProductResponse searchByCategory(Long categoriesId) {
+
+
+        Category category = categoryRepository.findById(categoriesId)
+                .orElseThrow(()-> new ResourceNotFoundException("Category", "Category not found with id:",categoriesId));
+
+        List<Product> productList = productRepository.findByCategoryOrderByPriceAsc(category);
+        return getProductResponse(productList);
+    }
+
+    @NonNull
+    private ProductResponse getProductResponse(List<Product> productList) {
         if(productList.isEmpty()){
             throw new APIException("No Product Records found!!");
         }
-
         List<ProductDTO> productDTOS = productList.stream()
-                        .map(product -> modelMapper.map(product, ProductDTO.class))
-                                .toList();
-
+                        .map( product -> modelMapper.map(product, ProductDTO.class))
+                        .toList();
+        ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
-        return productResponse;
 
+        return productResponse;
     }
 }

@@ -1,9 +1,14 @@
 package com.than.project.pop_cart_ecom.repository;
 
+import com.than.project.pop_cart_ecom.model.Category;
 import com.than.project.pop_cart_ecom.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    List<Product> findByCategoryOrderByPriceAsc(Category category);
 }
