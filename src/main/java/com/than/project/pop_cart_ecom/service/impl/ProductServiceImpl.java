@@ -33,7 +33,7 @@ public class ProductServiceImpl implements ProductService{
     public ProductDTO addProduct(ProductDTO productDTO, Long categoriesId) {
 
         Category category = categoryRepository.findById(categoriesId)
-                .orElseThrow(()-> new ResourceNotFoundException("Category", "Category not found with id:",categoriesId));
+                .orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId:",categoriesId));
 
         Product product = modelMapper.map(productDTO, Product.class);
 
@@ -60,7 +60,7 @@ public class ProductServiceImpl implements ProductService{
 
 
         Category category = categoryRepository.findById(categoriesId)
-                .orElseThrow(()-> new ResourceNotFoundException("Category", "Category not found with id:",categoriesId));
+                .orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId:",categoriesId));
 
         List<Product> productList = productRepository.findByCategoryOrderByPriceAsc(category);
         return getProductResponse(productList);
@@ -72,6 +72,26 @@ public class ProductServiceImpl implements ProductService{
         List<Product> productList = productRepository.findByProductNameLikeIgnoreCase('%'+keyword+'%');
 
         return  getProductResponse(productList);
+    }
+
+    @Override
+    public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
+
+        Product productFromDb = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product: ", "productId:",productId));
+
+        productFromDb.setProductName(productDTO.getProductName());
+        productFromDb.setDescription(productDTO.getDescription());
+        productFromDb.setQuantity(productDTO.getQuantity());
+        productFromDb.setDiscount(productDTO.getDiscount());
+        productFromDb.setPrice(productDTO.getPrice());
+        double specialPrice = productDTO.getPrice() - ((productDTO.getDiscount() * 0.01) * productDTO.getPrice());
+        productFromDb.setSpecialPrice(specialPrice);
+
+
+        Product updatedProduct = productRepository.save(productFromDb);
+
+        return modelMapper.map(updatedProduct, ProductDTO.class);
     }
 
     @NonNull
