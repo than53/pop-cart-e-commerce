@@ -15,7 +15,8 @@ public class ProductController {
 
     private final ProductService productService;
 
-        @PostMapping("/admin/categories/{categoriesId}/product")
+
+    @PostMapping("/admin/categories/{categoriesId}/product")
     public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDTO,
                                                  @PathVariable Long categoriesId){
         ProductDTO addProduct = productService.addProduct(productDTO, categoriesId);
@@ -51,6 +52,15 @@ public class ProductController {
             ProductDTO updateProduct = productService.updateProduct(productDTO, productId);
 
             return new ResponseEntity<>(updateProduct, HttpStatus.OK);
+
+    }
+
+    @DeleteMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductDTO> deleteProduct(@PathVariable Long productId){
+
+        ProductDTO deletedProduct = productService.deleteProduct(productId);
+
+        return new ResponseEntity<>(deletedProduct, HttpStatus.OK);
 
     }
 
