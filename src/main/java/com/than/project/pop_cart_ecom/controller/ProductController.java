@@ -3,6 +3,7 @@ package com.than.project.pop_cart_ecom.controller;
 import com.than.project.pop_cart_ecom.payload.ProductDTO;
 import com.than.project.pop_cart_ecom.payload.ProductResponse;
 import com.than.project.pop_cart_ecom.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class ProductController {
 
 
     @PostMapping("/admin/categories/{categoriesId}/product")
-    public ResponseEntity<ProductDTO> addProduct(@RequestBody ProductDTO productDTO,
+    public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO,
                                                  @PathVariable Long categoriesId){
         ProductDTO addProduct = productService.addProduct(productDTO, categoriesId);
         return new ResponseEntity<>(addProduct, HttpStatus.CREATED);
@@ -49,7 +50,7 @@ public class ProductController {
     }
 
         @PutMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO productDTO,
+    public ResponseEntity<ProductDTO> updateProduct(@Valid @RequestBody ProductDTO productDTO,
                                                     @PathVariable Long productId){
 
             ProductDTO updateProduct = productService.updateProduct(productDTO, productId);

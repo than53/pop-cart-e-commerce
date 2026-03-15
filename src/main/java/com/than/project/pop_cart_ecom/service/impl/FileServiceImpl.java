@@ -15,6 +15,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String uploadImage(String path, MultipartFile file) throws IOException {
+
         String originalFilename = file.getOriginalFilename();
 
         String randomId = UUID.randomUUID().toString();

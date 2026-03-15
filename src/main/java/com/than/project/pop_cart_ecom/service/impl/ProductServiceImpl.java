@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -48,15 +49,29 @@ public class ProductServiceImpl implements ProductService{
         Category category = categoryRepository.findById(categoriesId)
                 .orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId:",categoriesId));
 
-        Product product = modelMapper.map(productDTO, Product.class);
+        boolean isProductNotPresent = true;
 
-        product.setImage("default.png");
-        product.setCategory(category);
-        double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
-        product.setSpecialPrice(specialPrice);
-        Product savedProduct = productRepository.save(product);
+        List<Product> productList = category.getProducts();
+        for(Product products:productList){
+            if(products.getProductName().equals(productDTO.getProductName())){
+                isProductNotPresent = false;
+                break;
+            }
+        }
 
-        return modelMapper.map(product, ProductDTO.class);
+        if(isProductNotPresent) {
+            Product product = modelMapper.map(productDTO, Product.class);
+
+            product.setImage("default.png");
+            product.setCategory(category);
+            double specialPrice = product.getPrice() - ((product.getDiscount() * 0.01) * product.getPrice());
+            product.setSpecialPrice(specialPrice);
+            Product savedProduct = productRepository.save(product);
+
+            return modelMapper.map(product, ProductDTO.class);
+        }else{
+            throw new APIException("Product Already Exist!!");
+        }
     }
 
     @Override
@@ -70,7 +85,6 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public ProductResponse searchByCategory(Long categoriesId) {
-
 
         Category category = categoryRepository.findById(categoriesId)
                 .orElseThrow(()-> new ResourceNotFoundException("Category", "categoryId:",categoriesId));
@@ -134,12 +148,11 @@ public class ProductServiceImpl implements ProductService{
     }
 
 
-
     @NonNull
     private ProductResponse getProductResponse(List<Product> productList) {
-//        if(productList.isEmpty()){
-//            throw new APIException("No Product Records found!!");
-//        }
+        if(productList.isEmpty()){
+            throw new APIException("No Product Records exist!!");
+        }
         List<ProductDTO> productDTOS = productList.stream()
                         .map( product -> modelMapper.map(product, ProductDTO.class))
                         .toList();
