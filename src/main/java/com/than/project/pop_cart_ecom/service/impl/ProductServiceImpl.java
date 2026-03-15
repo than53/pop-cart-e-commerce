@@ -8,10 +8,12 @@ import com.than.project.pop_cart_ecom.payload.ProductDTO;
 import com.than.project.pop_cart_ecom.payload.ProductResponse;
 import com.than.project.pop_cart_ecom.repository.CategoryRepository;
 import com.than.project.pop_cart_ecom.repository.ProductRepository;
+import com.than.project.pop_cart_ecom.service.FileService;
 import com.than.project.pop_cart_ecom.service.ProductService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +35,12 @@ public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
 
+    private final FileService fileService;
+
     private final ModelMapper modelMapper;
+
+    @Value("${project.images.path}")
+    private String imageFolderPath;
 
     @Override
     public ProductDTO addProduct(ProductDTO productDTO, Long categoriesId) {
@@ -117,8 +124,8 @@ public class ProductServiceImpl implements ProductService{
                 .orElseThrow(()-> new ResourceNotFoundException("Product", "productId", productId));
 
         //Upload image to specific folder in server and get the filename of image
-        String path = "images/";
-        String filename = uploadImage(path, image);
+        String path = imageFolderPath;
+        String filename = fileService.uploadImage(path, image);
 
         productFromDb.setImage(filename);
         Product updatedProduct = productRepository.save(productFromDb);
@@ -126,22 +133,7 @@ public class ProductServiceImpl implements ProductService{
         return modelMapper.map(updatedProduct, ProductDTO.class);
     }
 
-    private String uploadImage(String path, MultipartFile file) throws IOException {
-        String originalFilename = file.getOriginalFilename();
 
-        String randomId = UUID.randomUUID().toString();
-
-        String filename = randomId.concat(originalFilename.substring(originalFilename.lastIndexOf('.')));
-        String filePath = path + File.separator + filename ;
-
-        File folder = new File(path);
-
-        if(!folder.exists())folder.mkdir();
-
-        Files.copy(file.getInputStream(), Paths.get(filePath));
-
-        return filename;
-    }
 
     @NonNull
     private ProductResponse getProductResponse(List<Product> productList) {
