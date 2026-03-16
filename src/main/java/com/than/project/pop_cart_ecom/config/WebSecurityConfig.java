@@ -1,12 +1,17 @@
 package com.than.project.pop_cart_ecom.config;
 
+import com.than.project.pop_cart_ecom.security.jwt.AuthEntryPointJwt;
+import com.than.project.pop_cart_ecom.security.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,13 +34,13 @@ public class WebSecurityConfig {
     @Autowired
     DataSource dataSource;
 
-//    @Autowired
-//    private AuthEntryPointJwt unauthorizedHandler;
-//
-//    @Bean
-//    public AuthTokenFilter authenticationJwtTokenFilter() {
-//        return new AuthTokenFilter();
-//    }
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
+
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter() {
+        return new AuthTokenFilter();
+    }
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -48,16 +53,19 @@ public class WebSecurityConfig {
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS)
         );
-       // http.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler));
-        http.httpBasic(withDefaults());
+
+       // http.httpBasic(withDefaults());
+        http.exceptionHandling(exception ->
+                exception.authenticationEntryPoint(unauthorizedHandler));
+
         http.headers(headers -> headers
                 .frameOptions(frameOptions -> frameOptions
                         .sameOrigin()
                 )
         );
-        http.csrf(csrf -> csrf.disable());
-//        http.addFilterBefore(authenticationJwtTokenFilter(),
-//                UsernamePasswordAuthenticationFilter.class);
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.addFilterBefore(authenticationJwtTokenFilter(),
+               UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();
@@ -91,5 +99,10 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
+      return  builder.getAuthenticationManager();
     }
 }

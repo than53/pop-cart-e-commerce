@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -53,7 +54,7 @@ public class JwtUtils {
         return Jwts.parserBuilder()
                 .setSigningKey(key())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
 
@@ -63,6 +64,8 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(jwtSecret)
         );
+        //PLAIN TEXT SECRET
+    //    return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public boolean validateJwtToken(String authToken){
@@ -72,7 +75,7 @@ public class JwtUtils {
             Jwts.parserBuilder()
                     .setSigningKey(key())
                     .build()
-                    .parseClaimsJwt(authToken);
+                    .parseClaimsJws(authToken);
             return true;
         }catch(MalformedJwtException e){
             logger.error("Invalid JWT Token: {}", e.getMessage());
