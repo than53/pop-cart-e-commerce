@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -42,22 +43,20 @@ public class JwtUtils {
     public String generateTokenFromUsername(UserDetails userDetails){
         String username = userDetails.getUsername();
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date().getTime() + jwtExpirationMs)))
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date().getTime() + jwtExpirationMs)))
                 .signWith(key())
                 .compact();
     }
 
     public String getUsernameFromJwt(String token){
-
-        return Jwts.parserBuilder()
-                .setSigningKey(key())
+        return Jwts.parser()
+                .verifyWith((SecretKey) key())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
+                .parseSignedClaims(token)
+                .getPayload()
                 .getSubject();
-
     }
 
     public Key key(){
@@ -72,10 +71,10 @@ public class JwtUtils {
         try{
             System.out.println("Validate");
 
-            Jwts.parserBuilder()
-                    .setSigningKey(key())
+            Jwts.parser()
+                    .verifyWith((SecretKey) key())
                     .build()
-                    .parseClaimsJws(authToken);
+                    .parseSignedClaims(authToken);
             return true;
         }catch(MalformedJwtException e){
             logger.error("Invalid JWT Token: {}", e.getMessage());
