@@ -17,6 +17,7 @@ import java.util.Set;
 @UniqueConstraint(columnNames = "username"),
 @UniqueConstraint(columnNames = "email")
 })
+@Data
 public class MyUser {
 
     @Id
