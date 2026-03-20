@@ -2,15 +2,20 @@ package com.than.project.pop_cart_ecom.config;
 
 import com.than.project.pop_cart_ecom.security.jwt.AuthEntryPointJwt;
 import com.than.project.pop_cart_ecom.security.jwt.AuthTokenFilter;
+import com.than.project.pop_cart_ecom.security.services.UserDetailsImpl;
+import com.than.project.pop_cart_ecom.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.authentication.configurers.userdetails.DaoAuthenticationConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -24,15 +29,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.sql.DataSource;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
     @Autowired
-    DataSource dataSource;
+    UserDetailsServiceImpl userDetailsServiceImpl;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
@@ -43,57 +46,17 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authorizeRequests ->
-                authorizeRequests.requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/signin").permitAll()
-                        .anyRequest().authenticated());
-        http.sessionManagement(
-                session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS)
-        );
-
-       // http.httpBasic(withDefaults());
-        http.exceptionHandling(exception ->
-                exception.authenticationEntryPoint(unauthorizedHandler));
-
-        http.headers(headers -> headers
-                .frameOptions(frameOptions -> frameOptions
-                        .sameOrigin()
-                )
-        );
-        http.csrf(AbstractHttpConfigurer::disable);
-        http.addFilterBefore(authenticationJwtTokenFilter(),
-               UsernamePasswordAuthenticationFilter.class);
-
-
-        return http.build();
+    public DaoAuthenticationProvider authenticationProvider(){
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+         authenticationProvider.setUserDetailsService(userDetailsServiceImpl);
+         authenticationProvider.setPasswordEncoder(passwordEncoder());
+         return authenticationProvider;
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(DataSource dataSource) {
-        return new JdbcUserDetailsManager(dataSource);
-    }
 
     @Bean
-    public CommandLineRunner initData(UserDetailsService userDetailsService) {
-        return args -> {
-            JdbcUserDetailsManager manager = (JdbcUserDetailsManager) userDetailsService;
-            UserDetails user1 = User.withUsername("user1")
-                    .password(passwordEncoder().encode("password1"))
-                    .roles("USER")
-                    .build();
-            UserDetails admin = User.withUsername("admin")
-                    //.password(passwordEncoder().encode("adminPass"))
-                    .password(passwordEncoder().encode("adminPass"))
-                    .roles("ADMIN")
-                    .build();
-
-            JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
-            userDetailsManager.createUser(user1);
-            userDetailsManager.createUser(admin);
-        };
+    public UserDetailsService userDetailsService() {
+        return userDetailsServiceImpl;
     }
 
     @Bean
@@ -103,6 +66,44 @@ public class WebSecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
-      return  builder.getAuthenticationManager();
+        return  builder.getAuthenticationManager();
     }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(
+                        session ->
+                                session.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(auth ->
+                   auth.requestMatchers("/api/auth/**").permitAll()
+                           .requestMatchers("/v3/api-docs/**").permitAll()
+                           .requestMatchers("/swagger-ui/**").permitAll()
+                           .requestMatchers("/api/public/**").permitAll()
+                           .requestMatchers("/api/admin/**").permitAll()// Testing during development
+                           .requestMatchers("/api/test/**").permitAll()
+                           .requestMatchers("/images/**").permitAll()
+                        .anyRequest().authenticated())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer(){
+        return (web -> web.ignoring().requestMatchers(
+                "/v3/api-docs",
+                "/configuration/ui",
+                "/swagger-resources/**",
+                "/configuration/security",
+                "/swagger-ui.html/",
+                "/webjars/**"));
+    }
+
 }
