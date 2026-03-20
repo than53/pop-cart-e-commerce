@@ -92,5 +92,5 @@ public class UserDetailsImpl implements UserDetails {
         UserDetailsImpl that = (UserDetailsImpl) o;
         return Objects.equals(id, that.id) && Objects.equals(username, that.username) && Objects.equals(email, that.email) && Objects.equals(password, that.password) && Objects.equals(authorities, that.authorities);
     }
-    
+
 }
