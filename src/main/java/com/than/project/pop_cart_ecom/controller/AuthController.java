@@ -1,8 +1,9 @@
 package com.than.project.pop_cart_ecom.controller;
 
 import com.than.project.pop_cart_ecom.security.jwt.JwtUtils;
-import com.than.project.pop_cart_ecom.security.jwt.LoginRequest;
-import com.than.project.pop_cart_ecom.security.jwt.LoginResponse;
+import com.than.project.pop_cart_ecom.security.request.LoginRequest;
+import com.than.project.pop_cart_ecom.security.response.UserInfoResponse;
+import com.than.project.pop_cart_ecom.security.services.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,11 +66,11 @@ public class AuthController {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
         List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-        LoginResponse response = new LoginResponse(jwtToken, userDetails.getUsername(), roles);
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId() , jwtToken, userDetails.getUsername(), roles);
 
         return  new ResponseEntity<>(response, HttpStatus.OK);
 
