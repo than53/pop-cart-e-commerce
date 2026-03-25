@@ -30,6 +30,7 @@ import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
