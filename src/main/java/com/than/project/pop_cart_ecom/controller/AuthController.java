@@ -1,8 +1,17 @@
 package com.than.project.pop_cart_ecom.controller;
 
+import com.than.project.pop_cart_ecom.model.AppRole;
+import com.than.project.pop_cart_ecom.model.MyUser;
+import com.than.project.pop_cart_ecom.model.Role;
+import com.than.project.pop_cart_ecom.repository.MyUserRepository;
+import com.than.project.pop_cart_ecom.repository.RoleRepository;
 import com.than.project.pop_cart_ecom.security.jwt.JwtUtils;
-import com.than.project.pop_cart_ecom.security.jwt.LoginRequest;
-import com.than.project.pop_cart_ecom.security.jwt.LoginResponse;
+import com.than.project.pop_cart_ecom.security.request.LoginRequest;
+import com.than.project.pop_cart_ecom.security.request.SignupRequest;
+import com.than.project.pop_cart_ecom.security.response.MessageResponse;
+import com.than.project.pop_cart_ecom.security.response.UserInfoResponse;
+import com.than.project.pop_cart_ecom.security.services.UserDetailsImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,39 +23,30 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
     private  AuthenticationManager authenticationManager;
 
     @Autowired
+    private MyUserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private  JwtUtils jwtUtils;
-
-    @GetMapping("/hello")
-    public  String hello(){
-        return "Hello";
-    }
-
-    @PreAuthorize("hasAnyRole('USER')")
-    @GetMapping("/helloUser")
-    public  String helloUser(){
-        return "Hello User";
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    @GetMapping("/helloAdmin")
-    public  String helloAdmin(){
-        return "Hello Admin";
-    }
 
 
     @PostMapping("/signin")
@@ -65,16 +65,60 @@ public class AuthController {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
         List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-        LoginResponse response = new LoginResponse(jwtToken, userDetails.getUsername(), roles);
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId() , jwtToken, userDetails.getUsername(), roles);
 
         return  new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest){
 
+        if(userRepository.existsByUsername(signupRequest.getUsername())){
+            return  ResponseEntity.badRequest().body(new MessageResponse("Error: Username already exist!!"));
+        }
 
+        if(userRepository.existsByEmail(signupRequest.getEmail())){
+            return  ResponseEntity.badRequest().body(new MessageResponse("Error: email already exist!!"));
+        }
 
+        MyUser user = new MyUser(
+                signupRequest.getUsername(), signupRequest.getEmail(), passwordEncoder.encode(signupRequest.getPassword())
+        );
+
+        Set<String> strRoles = signupRequest.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if(strRoles == null){
+            Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
+                    .orElseThrow(()-> new RuntimeException("Error: Role is not Found"));
+        }else{
+            strRoles.forEach(role ->{
+                switch (role){
+                    case "admin":
+                        Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
+                                .orElseThrow(()-> new RuntimeException("Error: Role is not Found"));
+                        roles.add(adminRole);
+                        break;
+                    case "seller":
+                        Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER)
+                                .orElseThrow(()-> new RuntimeException("Error: Role is not Found"));
+                        roles.add(sellerRole);
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
+                                .orElseThrow(()-> new RuntimeException("Error: Role is not Found"));
+                        roles.add(userRole);
+
+                }
+            });
+        }
+        user.setRoles(roles);
+
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }

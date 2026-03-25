@@ -168,9 +168,7 @@ public class ProductServiceImpl implements ProductService{
 
     @NonNull
     private ProductResponse getProductResponse(List<Product> productList, Page<Product> productPage) {
-        if(productList.isEmpty()){
-            throw new APIException("No Product Records exist!!");
-        }
+
         List<ProductDTO> productDTOS = productList.stream()
                         .map( product -> modelMapper.map(product, ProductDTO.class))
                         .toList();
