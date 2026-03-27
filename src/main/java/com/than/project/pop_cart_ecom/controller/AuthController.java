@@ -14,7 +14,9 @@ import com.than.project.pop_cart_ecom.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -66,12 +68,21 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+       // String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
+
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
         List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-        UserInfoResponse response = new UserInfoResponse(userDetails.getId() , jwtToken, userDetails.getUsername(), roles);
+      //  UserInfoResponse response = new UserInfoResponse(userDetails.getId() , jwtToken, userDetails.getUsername(), roles);
+        UserInfoResponse response = new UserInfoResponse(userDetails.getId(),
+                userDetails.getUsername(), roles, jwtCookie.toString());
 
-        return  new ResponseEntity<>(response, HttpStatus.OK);
+       // return  new ResponseEntity<>(response, HttpStatus.OK);
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                        jwtCookie.toString())
+                .body(response);
     }
 
     @PostMapping("/signup")
@@ -122,6 +133,7 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
+    @GetMapping("/username")
     public String currentUsername(Authentication authentication){
         if(authentication !=null){
             return authentication.getName();
