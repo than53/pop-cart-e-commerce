@@ -11,6 +11,7 @@ import com.than.project.pop_cart_ecom.repository.CartItemRepository;
 import com.than.project.pop_cart_ecom.repository.CartRepository;
 import com.than.project.pop_cart_ecom.repository.ProductRepository;
 import com.than.project.pop_cart_ecom.service.CartService;
+import com.than.project.pop_cart_ecom.util.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class CartServiceImpl implements CartService {
 
     private Cart createCart(){
         Cart userCart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
-        if(userCart !=nulll){
+        if(userCart !=null){
             return userCart;
         }
         Cart cart = new Cart();

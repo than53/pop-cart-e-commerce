@@ -63,7 +63,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return password;
+        return username;
     }
 
     @Override
