@@ -86,8 +86,8 @@ public class WebSecurityConfig {
                            .requestMatchers("/v3/api-docs/**").permitAll()
                            .requestMatchers("/h2-console/**").permitAll()
                            .requestMatchers("/swagger-ui/**").permitAll()
-                           .requestMatchers("/api/public/**").permitAll()
-                           .requestMatchers("/api/admin/**").permitAll()// Testing during development
+                  //         .requestMatchers("/api/public/**").permitAll()
+                 //          .requestMatchers("/api/admin/**").permitAll()// Testing during development
                            .requestMatchers("/api/test/**").permitAll()
                            .requestMatchers("/images/**").permitAll()
                         .anyRequest().authenticated())
@@ -141,12 +141,12 @@ public class WebSecurityConfig {
 
             // Create users if not already present
             if (!userRepository.existsByUsername("user1")) {
-                MyUser user1 = new MyUser("user1", "user1@example.com", passwordEncoder.encode("password1"));
+                MyUser user1 = new MyUser("user1", "user1@example.com", passwordEncoder.encode("password"));
                 userRepository.save(user1);
             }
 
             if (!userRepository.existsByUsername("seller1")) {
-                MyUser seller1 = new MyUser("seller1", "seller1@example.com", passwordEncoder.encode("password2"));
+                MyUser seller1 = new MyUser("seller1", "seller1@example.com", passwordEncoder.encode("password"));
                 userRepository.save(seller1);
             }
 
