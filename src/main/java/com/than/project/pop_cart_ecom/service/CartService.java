@@ -10,5 +10,7 @@ public interface CartService {
 
     List<CartDTO> getAllCarts();
 
-    CartDTO getCarts(String emailId, long cartId);
+    CartDTO getCarts(String emailId, Long cartId);
+
+    CartDTO updateProductQuantityInCart(Long productId, Integer quantity);
 }
