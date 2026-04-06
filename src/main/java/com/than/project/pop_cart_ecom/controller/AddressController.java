@@ -9,10 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/api")
 @Controller
@@ -29,5 +28,52 @@ public class AddressController {
         AddressDTO address = addressService.saveAddress(addressDTO,user);
 
         return new ResponseEntity<>(address, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/getAllAddress")
+    public ResponseEntity<List<AddressDTO>> getAllAddress(){
+
+        List<AddressDTO> addresses = addressService.getAllAddress();
+
+        return new ResponseEntity<>(addresses, HttpStatus.OK);
+    }
+
+    @GetMapping("/getUserAddress")
+    public ResponseEntity< List<AddressDTO>> getUserAddress(){
+
+        MyUser user = authUtil.loggedInUser();
+
+        List<AddressDTO> addresses = addressService.getUserAddress(user);
+
+        return new ResponseEntity<>(addresses, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAddressById/{addressId}")
+    public ResponseEntity<AddressDTO> getAddressById(@PathVariable("addressId") Long addressId){
+
+        AddressDTO address = addressService.getAddressById(addressId);
+
+        return new ResponseEntity<>(address, HttpStatus.OK);
+    }
+
+    @PutMapping("/updateAddress/{addressId}")
+    public ResponseEntity<AddressDTO> updateAddress(@PathVariable("addressId") Long addressId,
+                                                    @RequestBody AddressDTO addressDTO){
+
+        MyUser user = authUtil.loggedInUser();
+
+        AddressDTO updatedAddress = addressService.updateAddress(addressId, addressDTO, user);
+
+        return new ResponseEntity<>(updatedAddress, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/deleteAddress/{addressId}")
+    public ResponseEntity<String> deleteAddress(@PathVariable("addressId") Long addressId){
+
+        MyUser user = authUtil.loggedInUser();
+
+        String deletedAddress = addressService.deleteAddress(addressId, user);
+
+        return new ResponseEntity<>(deletedAddress, HttpStatus.OK);
     }
 }
