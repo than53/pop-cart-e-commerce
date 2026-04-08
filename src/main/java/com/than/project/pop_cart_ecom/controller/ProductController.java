@@ -5,6 +5,11 @@ import com.than.project.pop_cart_ecom.payload.APIResponse;
 import com.than.project.pop_cart_ecom.payload.ProductDTO;
 import com.than.project.pop_cart_ecom.payload.ProductResponse;
 import com.than.project.pop_cart_ecom.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +27,14 @@ public class ProductController {
     private final ProductService productService;
 
 
+    @Tag(name="Product API",description = "API for Managing Products")
+    @Operation(summary = "Create Product", description = "API for product creation")
+    @ApiResponses({
+            @ApiResponse(responseCode="201", description = "Product is created"),
+            @ApiResponse(responseCode = "400", description = "Incorrect request body"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    }
+    )
     @PostMapping("/admin/categories/{categoriesId}/product")
     public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO,
                                                  @PathVariable Long categoriesId){
@@ -29,6 +42,7 @@ public class ProductController {
         return new ResponseEntity<>(addProduct, HttpStatus.CREATED);
     }
 
+    @Tag(name="Product API",description = "API for Managing Products")
     @GetMapping("/public/products")
     public ResponseEntity<ProductResponse> getAllProduct(
             @RequestParam(name="pageNumber", defaultValue = AppConstant.PAGE_NUMBER) Integer pageNumber,
@@ -43,7 +57,7 @@ public class ProductController {
 
     @GetMapping("/public/categories/{categoriesId}/products")
     public ResponseEntity<ProductResponse> getProductsByCategory(
-            @PathVariable Long categoriesId,
+          @Parameter(description = "Category ID of Product") @PathVariable Long categoriesId,
             @RequestParam(name="pageNumber", defaultValue = AppConstant.PAGE_NUMBER) Integer pageNumber,
             @RequestParam(name="pageSize", defaultValue = AppConstant.PAGE_SIZE) Integer pageSize,
             @RequestParam(name="sortBy", defaultValue = AppConstant.SORT_PRODUCT_BY) String sortBy,
